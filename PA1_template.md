@@ -23,7 +23,8 @@ install.packages("timeDate")
 
 **Loading and preprocessing the data**
 
-```{r}
+
+```r
 library(sqldf)
 setwd("C:\\Users\\Yilu\\Desktop\\data")
 fileUrl <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
@@ -36,31 +37,50 @@ For this part of the assignment, you can ignore the missing values in the datase
 
 **What is mean total number of steps taken per day?**
 
-```{r}
+
+```r
 sum_by_date<-sqldf("select date, sum(steps) from data where steps is not null group by date")
 ```
 Make a histogram of the total number of steps taken each day
-```{r}
+
+```r
 hist(x=sum_by_date[,2],col="grey",breaks=20,xlab="Daily total steps",ylab="Frequency",
 main="The distribution of daily total missing data excluded")
 ```
+
+![plot of chunk unnamed-chunk-3](figure/unnamed-chunk-3-1.png)
 
 
 
 
 
 Calculate and report the mean and median of the total number of steps taken per day
-```{r}
+
+```r
 mean(sum_by_date[,2])
+```
+
+```
+## [1] 10766.19
+```
+
+```r
 median(sum_by_date[,2])
+```
+
+```
+## [1] 10765
 ```
 **What is the average daily activity pattern?**
 
 Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
-```{r}
+
+```r
 avg_by_interval<-sqldf("select interval, avg(steps) from data where steps is not null group by interval")
 plot(avg_by_interval[,1],avg_by_interval[,2],type="l",xlab="5-minute intervals",ylab="average steps in the interval across all days")
 ```
+
+![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5-1.png)
 
 
 
@@ -68,18 +88,29 @@ plot(avg_by_interval[,1],avg_by_interval[,2],type="l",xlab="5-minute intervals",
 
 **Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?**
 
-```{r}
+
+```r
 avg_by_interval[avg_by_interval[,2]==max(avg_by_interval[,2]),1]
+```
+
+```
+## [1] 835
 ```
 Imputing missing values
 
 Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with Na)
-```{r}
+
+```r
 sum(is.na(data$steps))
+```
+
+```
+## [1] 2304
 ```
 Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example the mean for that 5-minute interval, etc.
 Create a new dataset that is equal to the original dataset but with the missing data filled in
-```{r}
+
+```r
 data_rmna<-merge(data,avg_by_interval)
 for (i in 1: dim(data_rmna)[1])
 {
@@ -90,12 +121,29 @@ Make a histogram of the total number of steps taken each day and Calculate and r
 
 **Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?**
 
-```{r}
+
+```r
 sum_by_date_rmna<-sqldf("select date, sum(steps) from data_rmna group by date")
 hist(x=sum_by_date_rmna[,2],col="grey",breaks=20,xlab="Daily total steps",ylab="Frequency",
 main="The distribution of daily total missing data imputed")
+```
+
+![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-9-1.png)
+
+```r
 mean(sum_by_date_rmna[,2])
+```
+
+```
+## [1] 10766.19
+```
+
+```r
 median(sum_by_date_rmna[,2])
+```
+
+```
+## [1] 10766.19
 ```
 
 
@@ -106,7 +154,8 @@ the mean doesn't change, but the median has a  change, this is becasue we replac
 **Are there differences in activity patterns between weekdays and weekends?**
 
 Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
-```{r}
+
+```r
 library(timeDate)
 data_rmna_new<-cbind(data_rmna,isWeekday(data_rmna$date))
 colnames(data_rmna_new)<-c(names(data_rmna),"isWeekday")
@@ -115,7 +164,8 @@ data_rmna_new$isWeekday=as.factor(data_rmna_new$isWeekday)
 ```
 Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). See the README file in the GitHub repository to see an example of what this plot should look like using simulated data.
 
-```{r}
+
+```r
 library(lattice)
 avg_by_wk<-sqldf("select isWeekday, interval, avg(steps) from data_rmna_new group by isWeekday,interval")
 colnames(avg_by_wk)<-c("isWeekday","interval","avg_steps")
@@ -127,6 +177,8 @@ xyplot(avg_steps~ interval | factor( isWeekday ),
        lty=1,
  data=avg_by_wk)
 ```
+
+![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11-1.png)
 
 **Summary**
 
